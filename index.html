@@ -80,6 +80,7 @@
       }
 
       #entries div {
+        position: relative;
         background: white;
         padding: 16px;
         border-radius: 12px;
@@ -90,6 +91,37 @@
       #entries hr {
         display: none;
         /*カードで区切られているので線は不要　*/
+      }
+
+      .entryHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .entryHeader p {
+        margin: 0;
+        flex: 1;
+      }
+
+      .deleteBtn {
+        flex-shrink: 0;
+        width: 32px;
+        height: 32px;
+        background: none;
+        border: none;
+        color: #999;
+        cursor: pointer;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .deleteBtn:hover {
+        background: #f5f5f5;
+        color: #c0392b;
       }
     </style>
   </head>
@@ -112,35 +144,31 @@
     </div>
     <div id="diarySection" style="display: none">
       <form id="diaryForm">
-        <form id="diaryForm">
-          <div>
-            <label for="photo">写真:</label>
-            <input type="file" id="photo" accept="image/*" />
-          </div>
+        <div>
+          <label for="photo">写真:</label>
+          <input type="file" id="photo" accept="image/*" />
+        </div>
 
-          <div>
-            <label for="text">文章:</label>
-            <textarea
-              id="text"
-              rows="4"
-              cols="40"
-              placeholder="今日のこと..."
-            ></textarea>
-          </div>
+        <div>
+          <label for="text">文章:</label>
+          <textarea
+            id="text"
+            rows="4"
+            cols="40"
+            placeholder="今日のこと..."
+          ></textarea>
+        </div>
 
-          <div>
-            <label for="spotifyLink">Spotifyリンク</label>
-            <input
-              type="text"
-              id="spotifyLink"
-              placeholder="https://open.spotify.com/track/..."
-            />
-          </div>
+        <div>
+          <label for="spotifyLink">Spotifyリンク</label>
+          <input
+            type="text"
+            id="spotifyLink"
+            placeholder="https://open.spotify.com/track/..."
+          />
+        </div>
 
-          <button type="submit">投稿する</button>
-        </form>
-
-        <div id="entries"></div>
+        <button type="submit">投稿する</button>
       </form>
 
       <div id="entries"></div>
@@ -225,6 +253,7 @@
 
         data.forEach((row) => {
           renderEntry({
+            id: row.id,
             text: row.text,
             spotifyLink: row.spotify_link,
             photo: row.photo_url,
@@ -253,13 +282,55 @@
         }
 
         entry.innerHTML = `
-    ${photoHtml}
+  ${photoHtml}
+  <div class="entryHeader">
     <p>${data.text}</p>
-    ${spotifyEmbed}
-    <hr>
-    `;
+    <button class="deleteBtn" title="削除">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"></polyline>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+      </svg>
+    </button>
+  </div>
+  ${spotifyEmbed}
+`;
 
-        entriesDiv.prepend(entry);
+        // 削除ボタンが押されたときの処理
+        entry
+          .querySelector(".deleteBtn")
+          .addEventListener("click", async function () {
+            const confirmed = confirm("この投稿を削除しますか?");
+            if (!confirmed) return;
+
+            // 写真がある場合は、Storageからも削除する
+            if (data.photo) {
+              // URLの中から「photos/」より後ろの部分(ファイル名)を取り出す
+              const fileName = data.photo.split("/photos/")[1];
+
+              const { error: storageError } = await supabaseClient.storage
+                .from("photos")
+                .remove([fileName]);
+
+              if (storageError) {
+                alert("写真の削除に失敗しました: " + storageError.message);
+                return;
+              }
+            }
+
+            const { error } = await supabaseClient
+              .from("entries")
+              .delete()
+              .eq("id", data.id);
+
+            if (error) {
+              alert("削除に失敗しました: " + error.message);
+              return;
+            }
+
+            entry.remove();
+          });
+
+        entriesDiv.appendChild(entry);
       }
 
       // 投稿を保存する関数
