@@ -20,19 +20,31 @@
       }
 
       .fileButton {
-        display: block;
-        padding: 10px 16px;
-        background: #f0f0f0;
-        color: #555;
-        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 14px 16px;
+        background: #e6e6e6;
+        color: #a0a0a0;
+        border-radius: 12px;
         text-align: center;
         cursor: pointer;
         font-size: 14px;
-        border: 1px dashed #ccc;
+        border: 2px dashed #868584;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
       }
 
       .fileButton:hover {
-        background: #e8e8e8;
+        background: #d4d2d0;
+        border-color: #aaa7a3;
+      }
+
+      .fileButton svg {
+        display: block;
+        flex-shrink: 0;
       }
 
       .timeLabel {
@@ -242,9 +254,23 @@
     <div id="diarySection" style="display: none">
       <form id="diaryForm">
         <div>
-          <label for="photo">写真:</label>
           <label for="photo" class="fileButton">
-            <span id="fileNameLabel">写真を選択</span>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#b08a6a"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
+              ></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+            <span id="fileNameLabel">写真を選ぶ</span>
           </label>
           <input
             type="file"
@@ -365,6 +391,15 @@
           });
         });
       }
+      // 選択した写真のファイル名を表示する
+      document.getElementById("photo").addEventListener("change", function () {
+        const fileNameLabel = document.getElementById("fileNameLabel");
+        if (this.files.length > 0) {
+          fileNameLabel.textContent = this.files[0].name;
+        } else {
+          fileNameLabel.textContent = "写真を選ぶ";
+        }
+      });
 
       //　1件分の投稿を画面に表示する関数（共通化）
       function renderEntry(data) {
