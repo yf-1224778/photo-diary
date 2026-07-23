@@ -15,6 +15,26 @@
         box-sizing: border-box;
       }
 
+      .hiddenFileInput {
+        display: none;
+      }
+
+      .fileButton {
+        display: block;
+        padding: 10px 16px;
+        background: #f0f0f0;
+        color: #555;
+        border-radius: 6px;
+        text-align: center;
+        cursor: pointer;
+        font-size: 14px;
+        border: 1px dashed #ccc;
+      }
+
+      .fileButton:hover {
+        background: #e8e8e8;
+      }
+
       .timeLabel {
         margin-left: 8px;
       }
@@ -223,7 +243,15 @@
       <form id="diaryForm">
         <div>
           <label for="photo">写真:</label>
-          <input type="file" id="photo" accept="image/*" />
+          <label for="photo" class="fileButton">
+            <span id="fileNameLabel">写真を選択</span>
+          </label>
+          <input
+            type="file"
+            id="photo"
+            accept="image/*"
+            class="hiddenFileInput"
+          />
         </div>
 
         <div>
